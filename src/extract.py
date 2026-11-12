@@ -1,12 +1,13 @@
 """
 src/extract.py
-Mengambil data cuaca & kualitas udara dari Open-Meteo API
-Dilengkapi dengan HTTP Auto-Retry (Exponential Backoff) & Raw Cache Fallback.
+Mengambil data cuaca & kualitas udara dari Open-Meteo API untuk seluruh 38 Provinsi Indonesia.
+Dilengkapi Parallel ThreadPoolExecutor, HTTP Auto-Retry (Exponential Backoff) & Raw Cache Fallback.
 """
 
 import json
 import logging
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 
@@ -38,14 +39,14 @@ def create_retry_session() -> requests.Session:
         backoff_factor=1,
         status_forcelist=[429, 500, 502, 503, 504],
     )
-    adapter = HTTPAdapter(max_retries=retry_strategy)
+    adapter = HTTPAdapter(max_retries=retry_strategy, pool_connections=16, pool_maxsize=16)
     session.mount("https://", adapter)
     session.mount("http://", adapter)
     return session
 
 
 def fetch_city_data(session: requests.Session, city: dict) -> dict:
-    """Mengambil data Weather API dan Air Quality API untuk 1 kota."""
+    """Mengambil data Weather API dan Air Quality API untuk 1 ibu kota provinsi."""
     lat = city["latitude"]
     lon = city["longitude"]
 
@@ -80,26 +81,34 @@ def fetch_city_data(session: requests.Session, city: dict) -> dict:
 
 
 def extract_all_cities() -> Path:
-    """Loop semua kota dengan Auto-Retry; gunakan cache lokal jika API sedang down."""
-    logger.info("Memulai ekstraksi data dari Open-Meteo API untuk %d kota...", len(CITIES))
+    """Ekstraksi paralel seluruh 38 Provinsi Indonesia dengan ThreadPoolExecutor & Auto-Retry."""
+    logger.info("Memulai ekstraksi paralel Open-Meteo API untuk %d Provinsi Indonesia...", len(CITIES))
     session = create_retry_session()
     all_payloads = []
 
     try:
-        for city in CITIES:
-            logger.info("-> Mengambil data API untuk kota: %s (%s)", city["city_name"], city["province"])
-            city_payload = fetch_city_data(session, city)
-            all_payloads.append(city_payload)
+        with ThreadPoolExecutor(max_workers=6) as executor:
+            future_to_city = {
+                executor.submit(fetch_city_data, session, city): city for city in CITIES
+            }
+            for future in as_completed(future_to_city):
+                city = future_to_city[future]
+                city_payload = future.result()
+                all_payloads.append(city_payload)
+                logger.info("-> Selesai: %s (%s)", city["city_name"], city["province"])
+
+        # Urutkan kembali berdasarkan city_id
+        all_payloads.sort(key=lambda x: x["city_info"]["city_id"])
 
         RAW_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
         with open(RAW_OUTPUT_PATH, "w", encoding="utf-8") as f:
             json.dump(all_payloads, f, indent=2)
 
-        logger.info("Selesai! Data mentah terbaru disimpan di: %s", RAW_OUTPUT_PATH)
+        logger.info("Selesai! Data 38 Provinsi disimpan di: %s", RAW_OUTPUT_PATH)
     except Exception as exc:
         if RAW_OUTPUT_PATH.exists():
             logger.warning(
-                "API mengalami gangguan/timeout (%s). Menggunakan cache data mentah yang sudah ada di: %s",
+                "API mengalami gangguan (%s). Menggunakan cache data mentah di: %s",
                 type(exc).__name__,
                 RAW_OUTPUT_PATH,
             )

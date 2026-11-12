@@ -71,3 +71,33 @@ FROM warehouse.fact_air_quality f
 JOIN warehouse.dim_cities c ON f.city_id = c.city_id
 GROUP BY c.city_name, DATE(f.observed_at)
 ORDER BY observation_date DESC, avg_us_aqi DESC;
+
+-- 5. Tabel Audit History Eksekusi Pipeline (Observability)
+CREATE TABLE IF NOT EXISTS warehouse.etl_run_audit (
+    run_id SERIAL PRIMARY KEY,
+    executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    raw_rows INTEGER NOT NULL,
+    quarantined_rows INTEGER NOT NULL,
+    upserted_rows INTEGER NOT NULL,
+    status VARCHAR(20) NOT NULL
+);
+
+-- 6. Data Mart 3: Time-Series Per Jam (Untuk Grafik Interaktif di Dashboard)
+CREATE OR REPLACE VIEW marts.mart_hourly_timeseries AS
+SELECT
+    f.observed_at,
+    c.city_name,
+    c.province,
+    f.temperature_c,
+    f.humidity_pct,
+    f.precipitation_mm,
+    f.wind_speed_kmh,
+    f.pm2_5,
+    f.pm10,
+    f.co_ugm3,
+    f.us_aqi,
+    f.aqi_category,
+    f.is_polluted
+FROM warehouse.fact_air_quality f
+JOIN warehouse.dim_cities c ON f.city_id = c.city_id
+ORDER BY f.observed_at ASC, c.city_name ASC;

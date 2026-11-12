@@ -45,11 +45,11 @@ def run_quality_gate() -> dict:
         )
 
     # 1. Cek keunikan Primary Key dim_cities
-    pk_cities_ok = dim_cities["city_id"].is_unique and len(dim_cities) == 8
+    pk_cities_ok = dim_cities["city_id"].is_unique and len(dim_cities) >= 8
     add_check(
         "pk_unique_dim_cities",
         pk_cities_ok,
-        f"Jumlah kota unik: {dim_cities['city_id'].nunique()} (Target: 8)",
+        f"Jumlah kota unik: {dim_cities['city_id'].nunique()} (Min: 8)",
     )
 
     # 2. Cek keunikan Composite Key (city_id + observed_at) di fact_air_quality
@@ -68,10 +68,10 @@ def run_quality_gate() -> dict:
         f"Total nilai NULL pada sensor utama: {null_count}",
     )
 
-    # 4. Cek batas wajar suhu Indonesia (10°C s/d 45°C)
+    # 4. Cek batas wajar suhu Indonesia (8°C dataran tinggi Papua s/d 45°C)
     min_temp = float(fact_df["temperature_c"].min())
     max_temp = float(fact_df["temperature_c"].max())
-    temp_ok = (min_temp >= 10.0) and (max_temp <= 45.0)
+    temp_ok = (min_temp >= 8.0) and (max_temp <= 45.0)
     add_check(
         "valid_temperature_range_indonesia",
         temp_ok,

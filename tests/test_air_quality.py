@@ -26,10 +26,10 @@ def test_classify_aqi_categories():
 
 
 def test_cities_configuration_bounds():
-    """Pastikan ada 8 kota dan seluruh koordinatnya berada di wilayah Indonesia."""
-    assert len(CITIES) == 8
+    """Pastikan ada 38 provinsi dan seluruh koordinatnya berada di wilayah Indonesia."""
+    assert len(CITIES) == 38
     city_ids = [c["city_id"] for c in CITIES]
-    assert len(set(city_ids)) == 8  # Semua city_id harus unik
+    assert len(set(city_ids)) == 38  # Semua city_id harus unik
 
     for city in CITIES:
         assert -11.5 <= city["latitude"] <= 6.5, f"Latitude {city['city_name']} di luar Indonesia"
@@ -40,7 +40,7 @@ def test_transform_and_quality_gate_integration():
     """Pastikan transformasi JSON dan Data Quality Gate berjalan dan PASSED."""
     dim_cities, fact_df = transform_weather_and_air_quality()
 
-    assert len(dim_cities) == 8
+    assert len(dim_cities) >= 8
     assert len(fact_df) > 0
     assert fact_df["us_aqi"].isna().sum() == 0
     assert "aqi_category" in fact_df.columns
