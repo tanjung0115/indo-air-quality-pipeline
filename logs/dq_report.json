@@ -1,0 +1,45 @@
+{
+  "checked_at": "2026-11-12 12:19:11",
+  "overall_status": "PASSED",
+  "passed_checks": 6,
+  "total_checks": 6,
+  "total_fact_rows_validated": 576,
+  "checks": [
+    {
+      "check_name": "pk_unique_dim_cities",
+      "status": "PASSED",
+      "passed": true,
+      "detail": "Jumlah kota unik: 8 (Target: 8)"
+    },
+    {
+      "check_name": "no_duplicate_observations",
+      "status": "PASSED",
+      "passed": true,
+      "detail": "Jumlah baris duplikat (city_id, observed_at): 0"
+    },
+    {
+      "check_name": "no_null_critical_sensors",
+      "status": "PASSED",
+      "passed": true,
+      "detail": "Total nilai NULL pada sensor utama: 0"
+    },
+    {
+      "check_name": "valid_temperature_range_indonesia",
+      "status": "PASSED",
+      "passed": true,
+      "detail": "Rentang suhu terukur: 19.4\u00b0C s/d 35.9\u00b0C"
+    },
+    {
+      "check_name": "non_negative_pollution_metrics",
+      "status": "PASSED",
+      "passed": true,
+      "detail": "Min US AQI: 52, Min PM2.5: 6.4"
+    },
+    {
+      "check_name": "fk_integrity_city_id",
+      "status": "PASSED",
+      "passed": true,
+      "detail": "Orphan city_id: 0"
+    }
+  ]
+}

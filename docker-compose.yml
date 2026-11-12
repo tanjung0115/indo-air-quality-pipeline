@@ -1,0 +1,23 @@
+services:
+  air-quality-dwh:
+    image: postgres:15-alpine
+    container_name: indo-air-quality-dwh
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aq_admin
+      POSTGRES_PASSWORD: aq_secret_2026
+      POSTGRES_DB: air_quality_dwh
+    ports:
+      - "5434:5432"
+    volumes:
+      - aq_pgdata:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aq_admin -d air_quality_dwh"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  aq_pgdata:
+    driver: local
