@@ -7,7 +7,7 @@
       "latitude": -6.2088,
       "longitude": 106.8456
     },
-    "extracted_at": "2026-11-12 12:19:06",
+    "extracted_at": "2026-11-12 06:00:58",
     "weather_hourly": {
       "time": [
         "2026-11-10T00:00",
@@ -761,7 +761,7 @@
       "latitude": -7.2575,
       "longitude": 112.7521
     },
-    "extracted_at": "2026-11-12 12:19:06",
+    "extracted_at": "2026-11-12 06:00:59",
     "weather_hourly": {
       "time": [
         "2026-11-10T00:00",
@@ -1515,7 +1515,7 @@
       "latitude": -6.9175,
       "longitude": 107.6191
     },
-    "extracted_at": "2026-11-12 12:19:07",
+    "extracted_at": "2026-11-12 06:00:59",
     "weather_hourly": {
       "time": [
         "2026-11-10T00:00",
@@ -2269,7 +2269,7 @@
       "latitude": 3.5952,
       "longitude": 98.6722
     },
-    "extracted_at": "2026-11-12 12:19:07",
+    "extracted_at": "2026-11-12 06:01:00",
     "weather_hourly": {
       "time": [
         "2026-11-10T00:00",
@@ -3023,7 +3023,7 @@
       "latitude": -6.9667,
       "longitude": 110.4167
     },
-    "extracted_at": "2026-11-12 12:19:08",
+    "extracted_at": "2026-11-12 06:01:01",
     "weather_hourly": {
       "time": [
         "2026-11-10T00:00",
@@ -3777,7 +3777,7 @@
       "latitude": -5.1477,
       "longitude": 119.4327
     },
-    "extracted_at": "2026-11-12 12:19:09",
+    "extracted_at": "2026-11-12 06:01:02",
     "weather_hourly": {
       "time": [
         "2026-11-10T00:00",
@@ -4531,7 +4531,7 @@
       "latitude": -2.9761,
       "longitude": 104.7754
     },
-    "extracted_at": "2026-11-12 12:19:09",
+    "extracted_at": "2026-11-12 06:01:03",
     "weather_hourly": {
       "time": [
         "2026-11-10T00:00",
@@ -5285,7 +5285,7 @@
       "latitude": -8.6705,
       "longitude": 115.2126
     },
-    "extracted_at": "2026-11-12 12:19:11",
+    "extracted_at": "2026-11-12 06:01:03",
     "weather_hourly": {
       "time": [
         "2026-11-10T00:00",

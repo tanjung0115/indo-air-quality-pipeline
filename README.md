@@ -1,7 +1,7 @@
 # Indonesia Weather & Air Quality Monitoring Data Pipeline
 
-> **End-to-End Public API ETL Pipeline & PostgreSQL Star Schema Data Warehouse**  
-> Mengekstrak data cuaca dan polusi udara (`PM2.5`, `PM10`, `CO`, `US AQI`) secara *real-time* dari **Open-Meteo REST API** untuk 8 kota besar di Indonesia, melakukan pembersihan & validasi kualitas data menggunakan **Python (Pandas)**, serta menyimpannya ke dalam **PostgreSQL 15 Data Warehouse (Docker)**.
+> **End-to-End Public API ETL Pipeline, PostgreSQL Star Schema Data Warehouse & Apache Airflow Orchestration**  
+> Mengekstrak data cuaca dan polusi udara (`PM2.5`, `PM10`, `CO`, `US AQI`) secara *real-time* dari **Open-Meteo REST API** untuk 8 kota besar di Indonesia, melakukan pembersihan & validasi kualitas data menggunakan **Python (Pandas & Pytest)**, menyimpannya ke dalam **PostgreSQL 15 Data Warehouse**, serta menjadwalkannya secara otomatis dengan **Apache Airflow (Docker)**.
 
 ---
 
@@ -15,6 +15,7 @@ flowchart LR
     TR --> DQ{"3. Data Quality Gate\n6 Assertions (src/quality.py)"}
     DQ -->|"PASSED"| PG[("4. PostgreSQL 15 DWH\nwarehouse.dim_cities\nwarehouse.fact_air_quality")]
     PG --> MART[("5. Analytical Data Marts\nmarts.mart_city_pollution_ranking\nmarts.mart_daily_city_summary")]
+    AF["Apache Airflow Orchestrator\n(dags/air_quality_dag.py)"] -.->|"Scheduled Every 6 Hours"| EX
 ```
 
 ---
@@ -28,10 +29,13 @@ flowchart LR
    - Menggabungkan (*inner join*) array JSON cuaca dan polusi udara berdasarkan waktu pengamatan (`observed_at`) dan `city_id`.
    - Menghapus duplikasi `(city_id, observed_at)` serta memvalidasi nilai sensor kosong (`NULL`).
    - Mengklasifikasikan angka `us_aqi` ke dalam kategori kesehatan udara (`Baik`, `Sedang`, `Tidak Sehat bagi Sensitif`, `Tidak Sehat`, `Sangat Tidak Sehat`).
-3. **Automated Data Quality Gate (`src/quality.py`):**
+3. **Automated Data Quality Gate & Unit Testing (`src/quality.py` & `tests/test_air_quality.py`):**
    - Memeriksa 6 aturan kualitas data otomatis (keunikan *Primary Key* & *Composite Key*, kelengkapan sensor kritis, kewajaran rentang suhu Indonesia $10^\circ\text{C}\text{–}45^\circ\text{C}$, nilai polusi non-negatif, dan *Foreign Key Integrity*) sebelum pemuatan ke Data Warehouse.
+   - Dilengkapi *unit & integration test suite* menggunakan **Pytest**.
 4. **Idempotent Star Schema Warehouse (`sql/init_schema.sql` & `src/load.py`):**
    - Memisahkan schema `warehouse` (`dim_cities`, `fact_air_quality`) dan schema `marts` (`mart_city_pollution_ranking`, `mart_daily_city_summary`) di PostgreSQL 15.
+5. **Automated Workflow Orchestration (`dags/air_quality_dag.py`):**
+   - Menggunakan **Apache Airflow** (`indo_air_quality_monitoring_dag`) untuk menjadwalkan 4 task (`extract_open_meteo_api >> transform_weather_and_aqi >> run_data_quality_gate >> load_postgres_star_schema`) setiap 6 jam secara otomatis.
 
 ---
 
@@ -49,20 +53,44 @@ Hasil pemantauan 576 jam pengamatan cuaca & polusi udara di 8 kota besar Indones
 | 6 | **Medan** | Sumatera Utara | 72 | 93.7 | 121 | 30.75 | 26.1 | 91% | 42 |
 | 7 | **Palembang** | Sumatera Selatan | 72 | 82.3 | 87 | 25.50 | 28.0 | 83% | 2 |
 | 8 | **Denpasar** | Bali | 72 | 59.8 | 63 | 13.51 | 27.6 | 83% | 0 |
+
 ---
 
-## 4. Cara Menjalankan Proyek
+## 4. Dokumentasi Visual Hasil Eksekusi (Screenshots)
+
+### 1. Apache Airflow DAG Orchestration (`indo_air_quality_monitoring_dag` — 4 Tasks Success)
+
+![Apache Airflow DAG Success](docs/screenshots/01_airflow_dag_success.png)
+
+### 2. Automated Unit & Integration Testing (`pytest -v` — 3 Passed)
+
+![Pytest Unit Testing Passed](docs/screenshots/02_pytest_unit_tests_passed.png)
+
+### 3. Containerized Infrastructure (`indo-air-quality-dwh` & `indo-air-quality-airflow`)
+
+![Docker Containers Running](docs/screenshots/03_docker_containers_running.png)
+
+### 4. API Data Ingestion Execution (`src/extract.py`)
+
+![API Extract Execution](docs/screenshots/04_api_extract_execution.png)
+
+---
+
+## 5. Cara Menjalankan Proyek
 
 ```bash
-# 1. Nyalakan container PostgreSQL 15 Data Warehouse (port 5434)
+# 1. Nyalakan container PostgreSQL 15 DWH (port 5434) & Apache Airflow (port 8086)
 docker compose up -d
 
 # 2. Instal dependensi Python
 pip install -r requirements.txt
 
-# 3. Jalankan End-to-End ETL Pipeline
+# 3. Jalankan End-to-End ETL Pipeline secara langsung
 python run_pipeline.py
 
-# 4. (Opsional) Masuk ke PostgreSQL CLI untuk menjalankan query analitik manual
-docker exec -it indo-air-quality-dwh psql -U aq_admin -d air_quality_dwh
+# 4. Jalankan Automated Unit & Integration Tests
+python -m pytest -v
+
+# 5. Akses Apache Airflow Web UI di browser
+# URL: http://localhost:8086 (Login: admin / admin)
 ```
