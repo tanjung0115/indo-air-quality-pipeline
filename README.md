@@ -8,7 +8,6 @@
 ## 1. Arsitektur Data Pipeline
 
 ```mermaid
-![alt text](image-1.png)
 flowchart LR
     API1["Open-Meteo Weather API\n(Suhu, Kelembapan, Hujan, Angin)"] --> EX["1. Extract (src/extract.py)\nHTTP Session + Auto-Retry 3x\n& Raw JSON Landing"]
     API2["Open-Meteo Air Quality API\n(PM2.5, PM10, CO, US AQI)"] --> EX
@@ -50,7 +49,6 @@ Hasil pemantauan 576 jam pengamatan cuaca & polusi udara di 8 kota besar Indones
 | 6 | **Medan** | Sumatera Utara | 72 | 93.7 | 121 | 30.75 | 26.1 | 91% | 42 |
 | 7 | **Palembang** | Sumatera Selatan | 72 | 82.3 | 87 | 25.50 | 28.0 | 83% | 2 |
 | 8 | **Denpasar** | Bali | 72 | 59.8 | 63 | 13.51 | 27.6 | 83% | 0 |
-![alt text](image.png)
 ---
 
 ## 4. Cara Menjalankan Proyek
